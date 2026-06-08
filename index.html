@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AI Resume Parser ATS</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>AI Resume Parser ATS</h1>
+
+    <div class="card">
+
+        <h2>Upload Resume</h2>
+
+        <input
+            type="file"
+            id="resumeFile"
+            accept=".pdf"
+        >
+
+        <button onclick="uploadResume()">
+            Parse Resume
+        </button>
+
+    </div>
+
+    <div class="card">
+
+        <h2>Parsed Resume</h2>
+
+        <div id="candidateInfo"></div>
+
+    </div>
+
+    <div class="card">
+
+        <h2>Stored Candidates</h2>
+
+        <button onclick="loadCandidates()">
+            Refresh Candidates
+        </button>
+
+        <table id="candidateTable">
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                </tr>
+            </thead>
+
+            <tbody></tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
