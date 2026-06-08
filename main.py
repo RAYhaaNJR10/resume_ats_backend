@@ -1,11 +1,11 @@
 from fastapi import FastAPI, UploadFile, File
 from pydantic import BaseModel
 from pypdf import PdfReader
+import os
 
 from database import engine, SessionLocal
 from models import Base, Candidate
-
-import os
+from resume_parser import parse_resume
 
 app = FastAPI()
 
@@ -22,7 +22,35 @@ class CandidateCreate(BaseModel):
 
 @app.get("/")
 def home():
-    return {"message": "Resume Parser API Running"}
+    return {
+        "message": "Resume Parser API Running"
+    }
+
+
+@app.get("/candidates")
+def get_candidates():
+
+    db = SessionLocal()
+
+    try:
+
+        candidates = db.query(Candidate).all()
+
+        result = []
+
+        for c in candidates:
+            result.append({
+                "id": c.id,
+                "name": c.name,
+                "email": c.email,
+                "phone": c.phone,
+                "skills": c.skills
+            })
+
+        return result
+
+    finally:
+        db.close()
 
 
 @app.post("/candidate")
@@ -31,6 +59,7 @@ def create_candidate(candidate: CandidateCreate):
     db = SessionLocal()
 
     try:
+
         new_candidate = Candidate(
             name=candidate.name,
             email=candidate.email
@@ -53,28 +82,54 @@ def create_candidate(candidate: CandidateCreate):
 @app.post("/upload-resume")
 async def upload_resume(file: UploadFile = File(...)):
 
-    # Save uploaded file
-    file_path = os.path.join(
-        UPLOAD_FOLDER,
-        file.filename
-    )
+    db = SessionLocal()
 
-    with open(file_path, "wb") as buffer:
-        buffer.write(await file.read())
+    try:
 
-    # Read PDF
-    reader = PdfReader(file_path)
+        # Save uploaded PDF
+        file_path = os.path.join(
+            UPLOAD_FOLDER,
+            file.filename
+        )
 
-    extracted_text = ""
+        with open(file_path, "wb") as buffer:
+            buffer.write(await file.read())
 
-    for page in reader.pages:
-        text = page.extract_text()
+        # Extract text
+        reader = PdfReader(file_path)
 
-        if text:
-            extracted_text += text + "\n"
+        extracted_text = ""
 
-    return {
-        "message": "Resume uploaded successfully",
-        "filename": file.filename,
-        "text": extracted_text
-    }
+        for page in reader.pages:
+            text = page.extract_text()
+
+            if text:
+                extracted_text += text + "\n"
+
+        # Parse using OpenAI
+        parsed_data = parse_resume(extracted_text)
+
+        # Save to MySQL
+        candidate = Candidate(
+            name=parsed_data.get("name"),
+            email=parsed_data.get("email"),
+            phone=parsed_data.get("phone"),
+            skills=", ".join(
+                parsed_data.get("skills", [])
+            )
+        )
+
+        db.add(candidate)
+        db.commit()
+        db.refresh(candidate)
+
+        return {
+            "id": candidate.id,
+            "name": candidate.name,
+            "email": candidate.email,
+            "phone": candidate.phone,
+            "skills": parsed_data.get("skills", [])
+        }
+
+    finally:
+        db.close()
