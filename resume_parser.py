@@ -1,56 +1,52 @@
 from openai import OpenAI
 from dotenv import load_dotenv
+
 import os
 import json
 
 load_dotenv()
 
 client = OpenAI(
-    api_key=os.getenv("OPENAI_API_KEY")
+    api_key=os.getenv(
+        "OPENAI_API_KEY"
+    )
 )
+
+
+# ==================================
+# RESUME PARSER
+# ==================================
 
 def parse_resume(text):
 
     prompt = f"""
-You are an ATS resume parser.
+You are an enterprise ATS parser.
 
-Extract candidate information and return ONLY valid JSON.
+Extract information from the resume.
 
 Rules:
 
-1. Extract concise professional skill names only.
-2. Do NOT return full sentences.
-3. Do NOT include explanations.
-4. Each skill should be 1-3 words maximum.
-5. Remove duplicates.
+1. Return ONLY valid JSON.
+2. No markdown.
+3. No explanations.
+4. Extract concise skills only.
+5. Remove duplicate skills.
 6. Normalize skill names.
-7. Use Title Case.
+7. Skills must be short.
 
-Examples:
-
-GOOD:
-[
-    "Python",
-    "FastAPI",
-    "MySQL",
-    "Communication",
-    "Teamwork",
-    "Problem Solving"
-]
-
-BAD:
-[
-    "Strong ability to work as part of a team developed through participating in soccer since the age of eight",
-    "Highly developed communication skills shown by receiving positive feedback from supervisors"
-]
-
-Return JSON in this exact format:
+Return EXACTLY:
 
 {{
     "name": "",
     "email": "",
     "phone": "",
-    "skills": []
+    "skills": [],
+    "education": "",
+    "experience": "",
+    "linkedin": "",
+    "github": "",
+    "projects": [],
+    "certifications": []
 }}
 
 Resume:
@@ -58,20 +54,136 @@ Resume:
 {text}
 """
 
-    response = client.chat.completions.create(
-        model="gpt-4.1-mini",
-        messages=[
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ]
+    response = (
+        client.chat.completions.create(
+            model="gpt-4.1-mini",
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            temperature=0
+        )
     )
 
-    content = response.choices[0].message.content
+    content = (
+        response
+        .choices[0]
+        .message
+        .content
+    )
 
-    content = content.replace("```json", "")
-    content = content.replace("```", "")
-    content = content.strip()
+    content = (
+        content
+        .replace("```json", "")
+        .replace("```", "")
+        .strip()
+    )
 
-    return json.loads(content)
+    try:
+
+        parsed = json.loads(
+            content
+        )
+
+        return parsed
+
+    except Exception:
+
+        return {
+
+            "name": "",
+
+            "email": "",
+
+            "phone": "",
+
+            "skills": [],
+
+            "education": "",
+
+            "experience": "",
+
+            "linkedin": "",
+
+            "github": "",
+
+            "projects": [],
+
+            "certifications": []
+        }
+
+
+# ==================================
+# JOB DESCRIPTION PARSER
+# ==================================
+
+def extract_jd_skills(
+    job_description
+):
+
+    prompt = f"""
+You are an ATS system.
+
+Extract only the important skills
+from this Job Description.
+
+Rules:
+
+1. Return ONLY JSON.
+2. No explanations.
+3. No markdown.
+4. Remove duplicates.
+5. Normalize skills.
+6. Keep skills concise.
+
+Return:
+
+{{
+    "skills": []
+}}
+
+Job Description:
+
+{job_description}
+"""
+
+    response = (
+        client.chat.completions.create(
+            model="gpt-4.1-mini",
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            temperature=0
+        )
+    )
+
+    content = (
+        response
+        .choices[0]
+        .message
+        .content
+    )
+
+    content = (
+        content
+        .replace("```json", "")
+        .replace("```", "")
+        .strip()
+    )
+
+    try:
+
+        return json.loads(
+            content
+        )
+
+    except Exception:
+
+        return {
+            "skills": []
+        }

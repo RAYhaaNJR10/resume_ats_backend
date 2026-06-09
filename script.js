@@ -1,96 +1,8 @@
 const API_URL = window.location.origin;
 
-async function uploadResume() {
-
-    const fileInput =
-        document.getElementById("resumeFile");
-
-    const file =
-        fileInput.files[0];
-
-    if (!file) {
-        alert("Select a PDF first");
-        return;
-    }
-
-    const formData =
-        new FormData();
-
-    formData.append("file", file);
-
-    try {
-
-        const response =
-            await fetch(
-                `${API_URL}/upload-resume`,
-                {
-                    method: "POST",
-                    body: formData
-                }
-            );
-
-        const data =
-            await response.json();
-
-        if (!response.ok) {
-            alert(data.error || "Upload failed");
-            return;
-        }
-
-        displayCandidate(data);
-
-        loadCandidates();
-
-    } catch (error) {
-
-        console.error(error);
-
-        alert(
-            "Error uploading resume."
-        );
-    }
-}
-
-function displayCandidate(data) {
-
-    let skillsHtml = "";
-
-    if (data.skills) {
-
-        data.skills.forEach(skill => {
-
-            skillsHtml += `
-                <span class="skill">
-                    ${skill}
-                </span>
-            `;
-        });
-    }
-
-    document.getElementById(
-        "candidateInfo"
-    ).innerHTML = `
-
-        <p>
-            <strong>Name:</strong>
-            ${data.name || ""}
-        </p>
-
-        <p>
-            <strong>Email:</strong>
-            ${data.email || ""}
-        </p>
-
-        <p>
-            <strong>Phone:</strong>
-            ${data.phone || ""}
-        </p>
-
-        <div>
-            ${skillsHtml}
-        </div>
-    `;
-}
+// ======================
+// LOAD CANDIDATES
+// ======================
 
 async function loadCandidates() {
 
@@ -119,6 +31,8 @@ async function loadCandidates() {
                     <td>${candidate.name || ""}</td>
                     <td>${candidate.email || ""}</td>
                     <td>${candidate.phone || ""}</td>
+                    <td>${candidate.skills || ""}</td>
+                    <td>${candidate.ats_score || 0}%</td>
                 </tr>
             `;
         });
@@ -127,10 +41,215 @@ async function loadCandidates() {
 
         console.error(error);
 
-        console.log(
+        alert(
             "Unable to load candidates"
         );
     }
+}
+
+// ======================
+// BULK UPLOAD
+// ======================
+
+async function uploadBulkResume() {
+
+    const files =
+        document.getElementById(
+            "resumeFiles"
+        ).files;
+
+    if (files.length === 0) {
+
+        alert(
+            "Select PDFs first"
+        );
+
+        return;
+    }
+
+    const formData =
+        new FormData();
+
+    for (let file of files) {
+
+        formData.append(
+            "files",
+            file
+        );
+    }
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/upload-bulk`,
+                {
+                    method: "POST",
+                    body: formData
+                }
+            );
+
+        const data =
+            await response.json();
+
+        console.log(data);
+
+        alert(
+            "Upload completed"
+        );
+
+        loadCandidates();
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Upload failed"
+        );
+    }
+}
+
+// ======================
+// SEARCH
+// ======================
+
+async function searchCandidates() {
+
+    const skill =
+        document.getElementById(
+            "skillSearch"
+        ).value;
+
+    if (!skill) {
+
+        loadCandidates();
+        return;
+    }
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/search?skill=${encodeURIComponent(skill)}`
+            );
+
+        const data =
+            await response.json();
+
+        const tbody =
+            document.querySelector(
+                "#candidateTable tbody"
+            );
+
+        tbody.innerHTML = "";
+
+        data.forEach(candidate => {
+
+            tbody.innerHTML += `
+                <tr>
+                    <td>${candidate.id}</td>
+                    <td>${candidate.name || ""}</td>
+                    <td>${candidate.email || ""}</td>
+                    <td>${candidate.phone || ""}</td>
+                    <td>${candidate.skills || ""}</td>
+                    <td>${candidate.ats_score || 0}%</td>
+                </tr>
+            `;
+        });
+
+    } catch (error) {
+
+        console.error(error);
+    }
+}
+
+// ======================
+// ATS RANKING
+// ======================
+
+async function rankCandidates() {
+
+    const jobDescription =
+        document.getElementById(
+            "jobDescription"
+        ).value;
+
+    if (!jobDescription) {
+
+        alert(
+            "Paste Job Description"
+        );
+
+        return;
+    }
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/rank-candidates`,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                        "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        job_description:
+                        jobDescription
+                    })
+                }
+            );
+
+        const data =
+            await response.json();
+
+        const tbody =
+            document.querySelector(
+                "#rankingTable tbody"
+            );
+
+        tbody.innerHTML = "";
+
+        data.rankings.forEach(
+            candidate => {
+
+            tbody.innerHTML += `
+                <tr>
+                    <td>${candidate.candidate_id}</td>
+                    <td>${candidate.name}</td>
+                    <td>${candidate.email}</td>
+                    <td>${candidate.score}%</td>
+                    <td>${candidate.matched_skills.join(", ")}</td>
+                </tr>
+            `;
+        });
+
+        loadCandidates();
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Ranking failed"
+        );
+    }
+}
+
+// ======================
+// EXPORT CSV
+// ======================
+
+function exportCSV() {
+
+    window.open(
+        `${API_URL}/export-csv`,
+        "_blank"
+    );
 }
 
 loadCandidates();

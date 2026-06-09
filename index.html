@@ -1,64 +1,188 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-    <title>AI Resume Parser ATS</title>
-    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        AI Resume ATS Dashboard
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
 </head>
 
 <body>
 
 <div class="container">
 
-    <h1>AI Resume Parser ATS</h1>
+    <header>
 
-    <div class="card">
+        <h1>
+            AI Resume ATS Dashboard
+        </h1>
 
-        <h2>Upload Resume</h2>
+        <p>
+            Bulk Upload • Search • ATS Ranking
+        </p>
+
+    </header>
+
+    <!-- Upload -->
+
+    <section class="card">
+
+        <h2>
+            Upload Resumes
+        </h2>
 
         <input
             type="file"
-            id="resumeFile"
+            id="resumeFiles"
+            multiple
             accept=".pdf"
         >
 
-        <button onclick="uploadResume()">
-            Parse Resume
+        <button
+            onclick="uploadBulkResume()"
+        >
+            Upload PDFs
         </button>
 
-    </div>
+    </section>
 
-    <div class="card">
+    <!-- Search -->
 
-        <h2>Parsed Resume</h2>
+    <section class="card">
 
-        <div id="candidateInfo"></div>
+        <h2>
+            Search By Skill
+        </h2>
 
-    </div>
+        <div class="row">
 
-    <div class="card">
+            <input
+                type="text"
+                id="skillSearch"
+                placeholder="Python, FastAPI, SQL..."
+            >
 
-        <h2>Stored Candidates</h2>
+            <button
+                onclick="searchCandidates()"
+            >
+                Search
+            </button>
 
-        <button onclick="loadCandidates()">
-            Refresh Candidates
+        </div>
+
+    </section>
+
+    <!-- JD -->
+
+    <section class="card">
+
+        <h2>
+            ATS Job Matching
+        </h2>
+
+        <textarea
+            id="jobDescription"
+            rows="8"
+            placeholder="Paste complete job description here..."
+        ></textarea>
+
+        <button
+            onclick="rankCandidates()"
+        >
+            Rank Candidates
         </button>
 
-        <table id="candidateTable">
+    </section>
+
+    <!-- Rankings -->
+
+    <section class="card">
+
+        <div class="section-header">
+
+            <h2>
+                ATS Rankings
+            </h2>
+
+        </div>
+
+        <table
+            id="rankingTable"
+        >
 
             <thead>
+
                 <tr>
+
                     <th>ID</th>
                     <th>Name</th>
                     <th>Email</th>
-                    <th>Phone</th>
+                    <th>Score</th>
+                    <th>Matched Skills</th>
+
                 </tr>
+
             </thead>
 
             <tbody></tbody>
 
         </table>
 
-    </div>
+    </section>
+
+    <!-- Candidate DB -->
+
+    <section class="card">
+
+        <div class="section-header">
+
+            <h2>
+                Candidate Database
+            </h2>
+
+            <button
+                onclick="exportCSV()"
+            >
+                Export CSV
+            </button>
+
+        </div>
+
+        <table
+            id="candidateTable"
+        >
+
+            <thead>
+
+                <tr>
+
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Skills</th>
+                    <th>ATS Score</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody></tbody>
+
+        </table>
+
+    </section>
 
 </div>
 
