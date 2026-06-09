@@ -1,6 +1,7 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from pypdf import PdfReader
 import os
@@ -30,7 +31,30 @@ class CandidateCreate(BaseModel):
     email: str
 
 
+# ==========================
+# FRONTEND ROUTES
+# ==========================
+
 @app.get("/")
+def serve_home():
+    return FileResponse("index.html")
+
+
+@app.get("/script.js")
+def serve_js():
+    return FileResponse("script.js")
+
+
+@app.get("/style.css")
+def serve_css():
+    return FileResponse("style.css")
+
+
+# ==========================
+# API ROUTES
+# ==========================
+
+@app.get("/api")
 def home():
     return {
         "message": "Resume Parser API Running"

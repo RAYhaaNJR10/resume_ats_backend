@@ -1,4 +1,4 @@
-const API_URL = "http://127.0.0.1:8000";
+const API_URL = window.location.origin;
 
 async function uploadResume() {
 
@@ -18,50 +18,72 @@ async function uploadResume() {
 
     formData.append("file", file);
 
-    const response =
-        await fetch(
-            `${API_URL}/upload-resume`,
-            {
-                method: "POST",
-                body: formData
-            }
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/upload-resume`,
+                {
+                    method: "POST",
+                    body: formData
+                }
+            );
+
+        const data =
+            await response.json();
+
+        if (!response.ok) {
+            alert(data.error || "Upload failed");
+            return;
+        }
+
+        displayCandidate(data);
+
+        loadCandidates();
+
+    } catch (error) {
+
+        console.error(error);
+
+        alert(
+            "Error uploading resume."
         );
-
-    const data =
-        await response.json();
-
-    displayCandidate(data);
-
-    loadCandidates();
+    }
 }
 
-function displayCandidate(data){
+function displayCandidate(data) {
 
     let skillsHtml = "";
 
-    data.skills.forEach(skill => {
+    if (data.skills) {
 
-        skillsHtml += `
-            <span class="skill">
-                ${skill}
-            </span>
-        `;
-    });
+        data.skills.forEach(skill => {
+
+            skillsHtml += `
+                <span class="skill">
+                    ${skill}
+                </span>
+            `;
+        });
+    }
 
     document.getElementById(
         "candidateInfo"
     ).innerHTML = `
 
-        <p><strong>Name:</strong>
-            ${data.name}
+        <p>
+            <strong>Name:</strong>
+            ${data.name || ""}
         </p>
 
-        <p><strong>Email:</strong>
-            ${data.email}
+        <p>
+            <strong>Email:</strong>
+            ${data.email || ""}
         </p>
 
-        <p><strong>Phone:</strong>
-            ${data.phone}
+        <p>
+            <strong>Phone:</strong>
+            ${data.phone || ""}
         </p>
 
         <div>
@@ -70,34 +92,45 @@ function displayCandidate(data){
     `;
 }
 
-async function loadCandidates(){
+async function loadCandidates() {
 
-    const response =
-        await fetch(
-            `${API_URL}/candidates`
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/candidates`
+            );
+
+        const data =
+            await response.json();
+
+        const tbody =
+            document.querySelector(
+                "#candidateTable tbody"
+            );
+
+        tbody.innerHTML = "";
+
+        data.forEach(candidate => {
+
+            tbody.innerHTML += `
+                <tr>
+                    <td>${candidate.id}</td>
+                    <td>${candidate.name || ""}</td>
+                    <td>${candidate.email || ""}</td>
+                    <td>${candidate.phone || ""}</td>
+                </tr>
+            `;
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        console.log(
+            "Unable to load candidates"
         );
-
-    const data =
-        await response.json();
-
-    const tbody =
-        document.querySelector(
-            "#candidateTable tbody"
-        );
-
-    tbody.innerHTML = "";
-
-    data.forEach(candidate => {
-
-        tbody.innerHTML += `
-            <tr>
-                <td>${candidate.id}</td>
-                <td>${candidate.name}</td>
-                <td>${candidate.email}</td>
-                <td>${candidate.phone}</td>
-            </tr>
-        `;
-    });
+    }
 }
 
 loadCandidates();
