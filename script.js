@@ -1,35 +1,103 @@
 const API_URL = window.location.origin;
 
 // ======================================
+// PAGE NAVIGATION
+// ======================================
+
+function showPage(pageId, button) {
+
+    document
+        .querySelectorAll(".page-section")
+        .forEach(section => {
+            section.style.display = "none";
+        });
+
+    document
+        .querySelectorAll(".nav-btn")
+        .forEach(btn => {
+            btn.classList.remove("active");
+        });
+
+    document.getElementById(pageId).style.display = "block";
+
+    if (button) {
+        button.classList.add("active");
+    }
+
+    if (pageId === "candidates-page") {
+    loadCandidates();
+}
+
+if (pageId === "search-page") {
+
+    const tbody =
+        document.querySelector(
+            "#searchTable tbody"
+        );
+
+    if (tbody) {
+        tbody.innerHTML = "";
+    }
+
+    const searchBox =
+        document.getElementById(
+            "skillSearch"
+        );
+
+    if (searchBox) {
+        searchBox.value = "";
+    }
+}
+}
+
+// ======================================
 // STATUS BOX
 // ======================================
 
 function updateStatus(
-message,
-type = ""
-){
+    message,
+    type = ""
+) {
 
+    const box =
+        document.getElementById(
+            "statusBox"
+        );
 
-const box =
-    document.getElementById(
-        "statusBox"
-    );
+    if (!box) return;
 
-if(!box) return;
+    box.textContent = message;
 
-box.textContent = message;
+    box.className =
+        "status-box";
 
-box.className =
-    "status-box";
+    if (type) {
 
-if(type){
-
-    box.classList.add(
-        type
-    );
+        box.classList.add(
+            type
+        );
+    }
 }
 
+// ======================================
+// CREATE SKILL CELL
+// ======================================
 
+function createSkillsHTML(skills) {
+
+    if (!skills) return "";
+
+    const skillsArray =
+        skills
+            .split(",")
+            .map(skill => skill.trim())
+            .filter(skill => skill);
+
+    return skillsArray
+        .map(skill =>
+            `<span class="skill-tag">${skill}</span>`
+        )
+        .join("");
 }
 
 // ======================================
@@ -38,101 +106,102 @@ if(type){
 
 async function loadCandidates() {
 
+    try {
 
-try {
-
-    updateStatus(
-        "Loading candidates..."
-    );
-
-    const response =
-        await fetch(
-            `${API_URL}/candidates`
+        updateStatus(
+            "Loading candidates..."
         );
 
-    const data =
-        await response.json();
+        const response =
+            await fetch(
+                `${API_URL}/candidates`
+            );
 
-    const tbody =
-        document.querySelector(
-            "#candidateTable tbody"
+        const data =
+            await response.json();
+
+        const tbody =
+            document.querySelector(
+                "#candidateTable tbody"
+            );
+
+        if (!tbody) return;
+
+        tbody.innerHTML = "";
+
+        data.forEach(candidate => {
+
+            tbody.innerHTML += `
+                <tr>
+
+                    <td>${candidate.id || ""}</td>
+
+                    <td>${candidate.filename || ""}</td>
+
+                    <td>${candidate.name || ""}</td>
+
+                    <td>${candidate.email || ""}</td>
+
+                    <td>${candidate.phone || ""}</td>
+
+                    <td>${candidate.education || ""}</td>
+
+                    <td>${candidate.experience || ""}</td>
+
+                    <td>
+                        ${
+                            candidate.linkedin
+                            ?
+                            `<a href="${candidate.linkedin}" target="_blank">
+                                Open
+                            </a>`
+                            :
+                            ""
+                        }
+                    </td>
+
+                    <td>
+                        ${
+                            candidate.github
+                            ?
+                            `<a href="${candidate.github}" target="_blank">
+                                Open
+                            </a>`
+                            :
+                            ""
+                        }
+                    </td>
+
+                    <td>${candidate.projects || ""}</td>
+
+                    <td>${candidate.certifications || ""}</td>
+
+                    <td class="skills-cell">
+                        ${createSkillsHTML(candidate.skills)}
+                    </td>
+
+                    <td>
+                        ${candidate.ats_score || 0}%
+                    </td>
+
+                </tr>
+            `;
+        });
+
+        updateStatus(
+            `${data.length} candidates loaded`,
+            "status-success"
         );
 
-    tbody.innerHTML = "";
+    } catch (error) {
 
-    data.forEach(candidate => {
+        console.error(error);
 
-        tbody.innerHTML += `
-            <tr>
-
-                <td>${candidate.id || ""}</td>
-
-                <td>${candidate.filename || ""}</td>
-
-                <td>${candidate.name || ""}</td>
-
-                <td>${candidate.email || ""}</td>
-
-                <td>${candidate.phone || ""}</td>
-
-                <td>${candidate.education || ""}</td>
-
-                <td>${candidate.experience || ""}</td>
-
-                <td>
-                    ${
-                        candidate.linkedin
-                        ?
-                        `<a href="${candidate.linkedin}" target="_blank">
-                            Open
-                        </a>`
-                        :
-                        ""
-                    }
-                </td>
-
-                <td>
-                    ${
-                        candidate.github
-                        ?
-                        `<a href="${candidate.github}" target="_blank">
-                            Open
-                        </a>`
-                        :
-                        ""
-                    }
-                </td>
-
-                <td>${candidate.projects || ""}</td>
-
-                <td>${candidate.certifications || ""}</td>
-
-                <td>${candidate.skills || ""}</td>
-
-                <td>
-                    ${candidate.ats_score || 0}%
-                </td>
-
-            </tr>
-        `;
-    });
-
-    updateStatus(
-        `${data.length} candidates loaded`,
-        "status-success"
-    );
-
-} catch (error) {
-
-    console.error(error);
-
-    updateStatus(
-        "Failed to load candidates",
-        "status-error"
-    );
-}
-
-
+        updateStatus(
+            "Failed to load candidates",
+            "status-error"
+        );
+    }
 }
 
 // ======================================
@@ -141,329 +210,322 @@ try {
 
 async function uploadBulkResume() {
 
+    const files =
+        document.getElementById(
+            "resumeFiles"
+        ).files;
 
-const files =
-    document.getElementById(
-        "resumeFiles"
-    ).files;
+    if (files.length === 0) {
 
-if(files.length === 0){
-
-    alert(
-        "Please select PDF files."
-    );
-
-    return;
-}
-
-updateStatus(
-    `Uploading ${files.length} resume(s)...`
-);
-
-const formData =
-    new FormData();
-
-for(let file of files){
-
-    formData.append(
-        "files",
-        file
-    );
-}
-
-try {
-
-    const response =
-        await fetch(
-            `${API_URL}/upload-bulk`,
-            {
-                method: "POST",
-                body: formData
-            }
+        alert(
+            "Please select PDF files."
         );
 
-    const data =
-        await response.json();
-
-    console.log(data);
-
-    let successCount = 0;
-    let duplicateCount = 0;
-    let failedCount = 0;
-
-    data.forEach(item => {
-
-        if(
-            item.status ===
-            "success"
-        ){
-            successCount++;
-        }
-
-        else if(
-            item.status ===
-            "duplicate"
-        ){
-            duplicateCount++;
-        }
-
-        else{
-            failedCount++;
-        }
-    });
+        return;
+    }
 
     updateStatus(
-        `Completed: ${successCount} added, ${duplicateCount} duplicate, ${failedCount} failed`,
-        "status-success"
+        `Uploading ${files.length} resume(s)...`
     );
 
-    loadCandidates();
+    const formData =
+        new FormData();
 
-} catch(error){
+    for (let file of files) {
 
-    console.error(error);
+        formData.append(
+            "files",
+            file
+        );
+    }
 
-    updateStatus(
-        "Upload failed",
-        "status-error"
-    );
-}
+    try {
 
+        const response =
+            await fetch(
+                `${API_URL}/upload-bulk`,
+                {
+                    method: "POST",
+                    body: formData
+                }
+            );
 
+        const data =
+            await response.json();
+
+        let successCount = 0;
+        let duplicateCount = 0;
+        let failedCount = 0;
+
+        data.forEach(item => {
+
+            if (
+                item.status ===
+                "success"
+            ) {
+                successCount++;
+            }
+
+            else if (
+                item.status ===
+                "duplicate"
+            ) {
+                duplicateCount++;
+            }
+
+            else {
+                failedCount++;
+            }
+        });
+
+        updateStatus(
+            `Completed: ${successCount} added, ${duplicateCount} duplicate, ${failedCount} failed`,
+            "status-success"
+        );
+
+        loadCandidates();
+
+    } catch (error) {
+
+        console.error(error);
+
+        updateStatus(
+            "Upload failed",
+            "status-error"
+        );
+    }
 }
 
 // ======================================
 // SEARCH CANDIDATES
 // ======================================
 
-async function searchCandidates(){
+async function searchCandidates() {
 
+    const skill =
+        document.getElementById(
+            "skillSearch"
+        ).value.trim();
 
-const skill =
-    document.getElementById(
-        "skillSearch"
-    ).value.trim();
+    if (!skill) {
 
-if(!skill){
-
-    loadCandidates();
-    return;
-}
-
-try {
-
-    updateStatus(
-        `Searching "${skill}"...`
-    );
-
-    const response =
-        await fetch(
-            `${API_URL}/search?skill=${encodeURIComponent(skill)}`
+        alert(
+            "Enter a skill to search."
         );
 
-    const data =
-        await response.json();
+        return;
+    }
 
-    const tbody =
-        document.querySelector(
-            "#candidateTable tbody"
+    try {
+
+        updateStatus(
+            `Searching "${skill}"...`
         );
 
-    tbody.innerHTML = "";
+        const response =
+            await fetch(
+                `${API_URL}/search?skill=${encodeURIComponent(skill)}`
+            );
 
-    data.forEach(candidate => {
+        const data =
+            await response.json();
 
-        tbody.innerHTML += `
-            <tr>
+        const tbody =
+            document.querySelector(
+                "#searchTable tbody"
+            );
 
-                <td>${candidate.id || ""}</td>
+        if (!tbody) return;
 
-                <td></td>
+        tbody.innerHTML = "";
 
-                <td>${candidate.name || ""}</td>
+        data.forEach(candidate => {
 
-                <td>${candidate.email || ""}</td>
+            tbody.innerHTML += `
+                <tr>
 
-                <td>${candidate.phone || ""}</td>
+                    <td>${candidate.id || ""}</td>
 
-                <td></td>
+                    <td>${candidate.filename || ""}</td>
 
-                <td></td>
+                    <td>${candidate.name || ""}</td>
 
-                <td></td>
+                    <td>${candidate.email || ""}</td>
 
-                <td></td>
+                    <td>${candidate.phone || ""}</td>
 
-                <td></td>
+                    <td>${candidate.education || ""}</td>
 
-                <td></td>
+                    <td>${candidate.experience || ""}</td>
 
-                <td>${candidate.skills || ""}</td>
+                    <td></td>
 
-                <td>
-                    ${candidate.ats_score || 0}%
-                </td>
+                    <td></td>
 
-            </tr>
-        `;
-    });
+                    <td></td>
 
-    updateStatus(
-        `${data.length} result(s) found`,
-        "status-success"
-    );
+                    <td></td>
 
-} catch(error){
+                    <td class="skills-cell">
+                        ${createSkillsHTML(candidate.skills)}
+                    </td>
 
-    console.error(error);
+                    <td>
+                        ${candidate.ats_score || 0}%
+                    </td>
 
-    updateStatus(
-        "Search failed",
-        "status-error"
-    );
-}
+                </tr>
+            `;
+        });
 
+        updateStatus(
+            `${data.length} result(s) found`,
+            "status-success"
+        );
 
+    } catch (error) {
+
+        console.error(error);
+
+        updateStatus(
+            "Search failed",
+            "status-error"
+        );
+    }
 }
 
 // ======================================
 // ATS RANKING
 // ======================================
 
-async function rankCandidates(){
+async function rankCandidates() {
 
+    const jd =
+        document.getElementById(
+            "jobDescription"
+        ).value.trim();
 
-const jd =
-    document.getElementById(
-        "jobDescription"
-    ).value.trim();
+    if (!jd) {
 
-if(!jd){
-
-    alert(
-        "Paste a Job Description."
-    );
-
-    return;
-}
-
-try {
-
-    updateStatus(
-        "Extracting JD skills using AI..."
-    );
-
-    const response =
-        await fetch(
-            `${API_URL}/rank-candidates`,
-            {
-                method:"POST",
-
-                headers:{
-                    "Content-Type":
-                    "application/json"
-                },
-
-                body:JSON.stringify({
-                    job_description: jd
-                })
-            }
+        alert(
+            "Paste a Job Description."
         );
 
-    const data =
-        await response.json();
+        return;
+    }
 
-    updateStatus(
-        "Generating ATS rankings..."
-    );
+    try {
 
-    const tbody =
-        document.querySelector(
-            "#rankingTable tbody"
+        updateStatus(
+            "Extracting JD skills using AI..."
         );
 
-    tbody.innerHTML = "";
+        const response =
+            await fetch(
+                `${API_URL}/rank-candidates`,
+                {
+                    method: "POST",
 
-    data.rankings.forEach(
-        candidate => {
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
 
-        tbody.innerHTML += `
-            <tr>
+                    body: JSON.stringify({
+                        job_description: jd
+                    })
+                }
+            );
 
-                <td>
-                    ${candidate.candidate_id}
-                </td>
+        const data =
+            await response.json();
 
-                <td>
-                    ${candidate.name}
-                </td>
+        const tbody =
+            document.querySelector(
+                "#rankingTable tbody"
+            );
 
-                <td>
-                    ${candidate.email}
-                </td>
+        tbody.innerHTML = "";
 
-                <td>
-                    ${candidate.score}%
-                </td>
+        data.rankings.forEach(
+            candidate => {
 
-                <td>
-                    ${candidate.matched_skills.join(", ")}
-                </td>
+                tbody.innerHTML += `
+                    <tr>
 
-            </tr>
-        `;
-    });
+                        <td>
+                            ${candidate.candidate_id}
+                        </td>
 
-    updateStatus(
-        `Ranking completed for ${data.rankings.length} candidate(s)`,
-        "status-success"
-    );
+                        <td>
+                            ${candidate.name}
+                        </td>
 
-    loadCandidates();
+                        <td>
+                            ${candidate.email}
+                        </td>
 
-} catch(error){
+                        <td>
+                            ${candidate.score}%
+                        </td>
 
-    console.error(error);
+                        <td class="skills-cell">
+                            ${candidate.matched_skills.join(", ")}
+                        </td>
 
-    updateStatus(
-        "Ranking failed",
-        "status-error"
-    );
-}
+                    </tr>
+                `;
+            });
 
+        updateStatus(
+            `Ranking completed for ${data.rankings.length} candidate(s)`,
+            "status-success"
+        );
 
+    } catch (error) {
+
+        console.error(error);
+
+        updateStatus(
+            "Ranking failed",
+            "status-error"
+        );
+    }
 }
 
 // ======================================
 // EXPORT CSV
 // ======================================
 
-function exportCSV(){
-
-
-updateStatus(
-    "Preparing CSV export..."
-);
-
-window.open(
-    `${API_URL}/export-csv`,
-    "_blank"
-);
-
-setTimeout(() => {
+function exportCSV() {
 
     updateStatus(
-        "CSV exported",
-        "status-success"
+        "Preparing CSV export..."
     );
 
-}, 1000);
+    window.open(
+        `${API_URL}/export-csv`,
+        "_blank"
+    );
 
+    setTimeout(() => {
 
+        updateStatus(
+            "CSV exported",
+            "status-success"
+        );
+
+    }, 1000);
 }
 
 // ======================================
 // INITIAL LOAD
 // ======================================
 
-loadCandidates();
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        loadCandidates();
+    }
+);

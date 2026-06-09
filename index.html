@@ -23,19 +23,7 @@
 
 <body>
 
-<div class="container">
-
-    <header>
-
-        <h1>
-            AI Resume ATS Dashboard
-        </h1>
-
-        <p>
-            Bulk Resume Upload • ATS Ranking • Candidate Search
-        </p>
-
-    </header>
+    <!-- STATUS BOX -->
 
     <div
         id="statusBox"
@@ -44,32 +32,197 @@
         Ready
     </div>
 
-    <!-- Upload -->
+    <!-- SIDEBAR -->
 
-    <section class="card">
+    <aside class="sidebar">
 
-        <h2>
-            Upload Resumes
-        </h2>
+        <div class="sidebar-header">
 
-        <input
-            type="file"
-            id="resumeFiles"
-            multiple
-            accept=".pdf"
+            <h2>
+                AI Resume ATS
+            </h2>
+
+            <p>
+                HR Dashboard
+            </p>
+
+        </div>
+
+        <nav class="sidebar-nav">
+
+            <button
+                class="nav-btn active"
+                onclick="showPage('upload-page', this)"
+            >
+                📤 Upload Resumes
+            </button>
+
+            <button
+                class="nav-btn"
+                onclick="showPage('candidates-page', this)"
+            >
+                👥 Candidate Database
+            </button>
+
+            <button
+                class="nav-btn"
+                onclick="showPage('search-page', this)"
+            >
+                🔍 Search Skills
+            </button>
+
+            <button
+                class="nav-btn"
+                onclick="showPage('matching-page', this)"
+            >
+                🎯 ATS Matching
+            </button>
+
+        </nav>
+
+    </aside>
+
+    <!-- MAIN CONTENT -->
+
+    <main class="main-content">
+
+        <!-- UPLOAD PAGE -->
+
+        <section
+            id="upload-page"
+            class="page-section"
         >
 
-        <button
-            onclick="uploadBulkResume()"
+            <div class="page-header">
+
+                <h1>
+                    Upload Resumes
+                </h1>
+
+                <p>
+                    Upload multiple PDF resumes for parsing and storage.
+                </p>
+
+            </div>
+
+            <div class="card">
+
+                <h2>
+                    Bulk Resume Upload
+                </h2>
+
+                <input
+                    type="file"
+                    id="resumeFiles"
+                    multiple
+                    accept=".pdf"
+                >
+
+                <button
+                    onclick="uploadBulkResume()"
+                >
+                    Upload PDFs
+                </button>
+
+            </div>
+
+        </section>
+
+        <!-- CANDIDATES PAGE -->
+
+        <section
+            id="candidates-page"
+            class="page-section"
+            style="display:none;"
         >
-            Upload PDFs
-        </button>
 
-    </section>
+            <div class="page-header">
 
-    <!-- Search -->
+                <h1>
+                    Candidate Database
+                </h1>
 
-    <section class="card">
+                <p>
+                    View and manage all parsed candidates.
+                </p>
+
+            </div>
+
+            <div class="card">
+
+                <div class="section-header">
+
+                    <h2>
+                        Candidate Records
+                    </h2>
+
+                    <button
+                        onclick="exportCSV()"
+                    >
+                        Export CSV
+                    </button>
+
+                </div>
+
+                <div class="table-container">
+
+                    <table id="candidateTable">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>ID</th>
+                                <th>Filename</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Education</th>
+                                <th>Experience</th>
+                                <th>LinkedIn</th>
+                                <th>GitHub</th>
+                                <th>Projects</th>
+                                <th>Certifications</th>
+                                <th>Skills</th>
+                                <th>ATS Score</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- SEARCH PAGE -->
+
+<section
+    id="search-page"
+    class="page-section"
+    style="display:none;"
+>
+
+    <div class="page-header">
+
+        <h1>
+            Search Candidates
+        </h1>
+
+        <p>
+            Search candidates by skill.
+        </p>
+
+    </div>
+
+    <div class="card">
 
         <h2>
             Search By Skill
@@ -91,86 +244,17 @@
 
         </div>
 
-    </section>
+    </div>
 
-    <!-- ATS Ranking -->
-
-    <section class="card">
+    <div class="card">
 
         <h2>
-            ATS Job Matching
-        </h2>
-
-        <textarea
-            id="jobDescription"
-            placeholder="Paste full Job Description here..."
-        ></textarea>
-
-        <button
-            onclick="rankCandidates()"
-        >
-            Rank Candidates
-        </button>
-
-    </section>
-
-    <!-- Ranking Table -->
-
-    <section class="card">
-
-        <h2>
-            ATS Rankings
+            Search Results
         </h2>
 
         <div class="table-container">
 
-            <table id="rankingTable">
-
-                <thead>
-
-                    <tr>
-
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Score</th>
-                        <th>Matched Skills</th>
-
-                    </tr>
-
-                </thead>
-
-                <tbody>
-
-                </tbody>
-
-            </table>
-
-        </div>
-
-    </section>
-
-    <!-- Candidate Table -->
-
-    <section class="card">
-
-        <div class="section-header">
-
-            <h2>
-                Candidate Database
-            </h2>
-
-            <button
-                onclick="exportCSV()"
-            >
-                Export CSV
-            </button>
-
-        </div>
-
-        <div class="table-container">
-
-            <table id="candidateTable">
+            <table id="searchTable">
 
                 <thead>
 
@@ -202,11 +286,88 @@
 
         </div>
 
-    </section>
+    </div>
 
-</div>
+</section>
 
-<script src="script.js"></script>
+        <!-- ATS PAGE -->
+
+        <section
+            id="matching-page"
+            class="page-section"
+            style="display:none;"
+        >
+
+            <div class="page-header">
+
+                <h1>
+                    ATS Matching
+                </h1>
+
+                <p>
+                    Rank candidates against a job description.
+                </p>
+
+            </div>
+
+            <div class="card">
+
+                <h2>
+                    ATS Job Matching
+                </h2>
+
+                <textarea
+                    id="jobDescription"
+                    placeholder="Paste full Job Description here..."
+                ></textarea>
+
+                <button
+                    onclick="rankCandidates()"
+                >
+                    Rank Candidates
+                </button>
+
+            </div>
+
+            <div class="card">
+
+                <h2>
+                    ATS Rankings
+                </h2>
+
+                <div class="table-container">
+
+                    <table id="rankingTable">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Score</th>
+                                <th>Matched Skills</th>
+
+                            </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <script src="script.js"></script>
 
 </body>
 
