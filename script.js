@@ -38,7 +38,7 @@ if(type){
 
 async function loadCandidates() {
 
-```
+
 try {
 
     updateStatus(
@@ -131,7 +131,7 @@ try {
         "status-error"
     );
 }
-```
+
 
 }
 
