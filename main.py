@@ -1,5 +1,6 @@
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from pypdf import PdfReader
 import os
@@ -12,10 +13,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://127.0.0.1:5500",
-        "http://localhost:5500"
-    ],
+    allow_origins=["*"],  # easier for Railway deployment
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -94,11 +92,18 @@ def create_candidate(candidate: CandidateCreate):
 @app.post("/upload-resume")
 async def upload_resume(file: UploadFile = File(...)):
 
+    if not file.filename.lower().endswith(".pdf"):
+        return JSONResponse(
+            status_code=400,
+            content={
+                "error": "Only PDF files are allowed"
+            }
+        )
+
     db = SessionLocal()
 
     try:
 
-        # Save uploaded PDF
         file_path = os.path.join(
             UPLOAD_FOLDER,
             file.filename
@@ -107,7 +112,6 @@ async def upload_resume(file: UploadFile = File(...)):
         with open(file_path, "wb") as buffer:
             buffer.write(await file.read())
 
-        # Extract text
         reader = PdfReader(file_path)
 
         extracted_text = ""
@@ -118,10 +122,10 @@ async def upload_resume(file: UploadFile = File(...)):
             if text:
                 extracted_text += text + "\n"
 
-        # Parse using OpenAI
-        parsed_data = parse_resume(extracted_text)
+        parsed_data = parse_resume(
+            extracted_text
+        )
 
-        # Save to MySQL
         candidate = Candidate(
             name=parsed_data.get("name"),
             email=parsed_data.get("email"),
@@ -140,7 +144,9 @@ async def upload_resume(file: UploadFile = File(...)):
             "name": candidate.name,
             "email": candidate.email,
             "phone": candidate.phone,
-            "skills": parsed_data.get("skills", [])
+            "skills": parsed_data.get(
+                "skills", []
+            )
         }
 
     finally:
