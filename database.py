@@ -6,13 +6,13 @@ import os
 
 load_dotenv()
 
-DB_USER = os.getenv("DB_USER")
+DB_USER = os.getenv("MYSQLUSER")
 DB_PASSWORD = quote_plus(
-    os.getenv("DB_PASSWORD", "")
+    os.getenv("MYSQLPASSWORD", "")
 )
-DB_HOST = os.getenv("DB_HOST")
-DB_PORT = os.getenv("DB_PORT")
-DB_NAME = os.getenv("DB_NAME")
+DB_HOST = os.getenv("MYSQLHOST")
+DB_PORT = os.getenv("MYSQLPORT")
+DB_NAME = os.getenv("MYSQLDATABASE")
 
 DATABASE_URL = (
     f"mysql+pymysql://"
