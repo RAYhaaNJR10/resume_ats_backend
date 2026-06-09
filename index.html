@@ -1,192 +1,249 @@
 <!DOCTYPE html>
+
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
 
-    <title>
-        AI Resume ATS Dashboard
-    </title>
+```
+<meta charset="UTF-8">
 
-    <link
-        rel="stylesheet"
-        href="style.css"
-    >
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>
+    AI Resume ATS Dashboard
+</title>
+
+<link
+    rel="stylesheet"
+    href="style.css"
+>
+```
+
 </head>
 
 <body>
 
 <div class="container">
 
-    <header>
+```
+<header>
 
-        <h1>
-            AI Resume ATS Dashboard
-        </h1>
+    <h1>
+        AI Resume ATS Dashboard
+    </h1>
 
-        <p>
-            Bulk Upload • Search • ATS Ranking
-        </p>
+    <p>
+        Bulk Resume Upload • Skill Search • ATS Ranking
+    </p>
 
-    </header>
+</header>
 
-    <!-- Upload -->
+<!-- ====================================== -->
+<!-- STATUS -->
+<!-- ====================================== -->
 
-    <section class="card">
+<div
+    id="statusBox"
+    class="status-box"
+>
+    Ready
+</div>
 
-        <h2>
-            Upload Resumes
-        </h2>
+<!-- ====================================== -->
+<!-- UPLOAD -->
+<!-- ====================================== -->
+
+<section class="card">
+
+    <h2>
+        Upload Resumes
+    </h2>
+
+    <input
+        type="file"
+        id="resumeFiles"
+        multiple
+        accept=".pdf"
+    >
+
+    <br><br>
+
+    <button
+        onclick="uploadBulkResume()"
+    >
+        Upload PDFs
+    </button>
+
+</section>
+
+<!-- ====================================== -->
+<!-- SEARCH -->
+<!-- ====================================== -->
+
+<section class="card">
+
+    <h2>
+        Search By Skill
+    </h2>
+
+    <div class="row">
 
         <input
-            type="file"
-            id="resumeFiles"
-            multiple
-            accept=".pdf"
+            type="text"
+            id="skillSearch"
+            placeholder="Python, FastAPI, SQL..."
         >
 
         <button
-            onclick="uploadBulkResume()"
+            onclick="searchCandidates()"
         >
-            Upload PDFs
+            Search
         </button>
 
-    </section>
+    </div>
 
-    <!-- Search -->
+</section>
 
-    <section class="card">
+<!-- ====================================== -->
+<!-- ATS MATCHING -->
+<!-- ====================================== -->
+
+<section class="card">
+
+    <h2>
+        ATS Job Matching
+    </h2>
+
+    <textarea
+        id="jobDescription"
+        rows="8"
+        placeholder="Paste full Job Description here..."
+    ></textarea>
+
+    <br><br>
+
+    <button
+        onclick="rankCandidates()"
+    >
+        Rank Candidates
+    </button>
+
+</section>
+
+<!-- ====================================== -->
+<!-- ATS RANKINGS -->
+<!-- ====================================== -->
+
+<section class="card">
+
+    <div class="section-header">
 
         <h2>
-            Search By Skill
+            ATS Rankings
         </h2>
 
-        <div class="row">
+    </div>
 
-            <input
-                type="text"
-                id="skillSearch"
-                placeholder="Python, FastAPI, SQL..."
-            >
+    <table
+        id="rankingTable"
+    >
 
-            <button
-                onclick="searchCandidates()"
-            >
-                Search
-            </button>
+        <thead>
 
-        </div>
+            <tr>
 
-    </section>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Score</th>
+                <th>Matched Skills</th>
 
-    <!-- JD -->
+            </tr>
 
-    <section class="card">
+        </thead>
+
+        <tbody>
+
+        </tbody>
+
+    </table>
+
+</section>
+
+<!-- ====================================== -->
+<!-- CANDIDATE DATABASE -->
+<!-- ====================================== -->
+
+<section class="card">
+
+    <div class="section-header">
 
         <h2>
-            ATS Job Matching
+            Candidate Database
         </h2>
-
-        <textarea
-            id="jobDescription"
-            rows="8"
-            placeholder="Paste complete job description here..."
-        ></textarea>
 
         <button
-            onclick="rankCandidates()"
+            onclick="exportCSV()"
         >
-            Rank Candidates
+            Export CSV
         </button>
 
-    </section>
+    </div>
 
-    <!-- Rankings -->
+    <table
+        id="candidateTable"
+    >
 
-    <section class="card">
+        <thead>
 
-        <div class="section-header">
+            <tr>
 
-            <h2>
-                ATS Rankings
-            </h2>
+                <th>ID</th>
 
-        </div>
+                <th>Filename</th>
 
-        <table
-            id="rankingTable"
-        >
+                <th>Name</th>
 
-            <thead>
+                <th>Email</th>
 
-                <tr>
+                <th>Phone</th>
 
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Score</th>
-                    <th>Matched Skills</th>
+                <th>Education</th>
 
-                </tr>
+                <th>Experience</th>
 
-            </thead>
+                <th>LinkedIn</th>
 
-            <tbody></tbody>
+                <th>GitHub</th>
 
-        </table>
+                <th>Projects</th>
 
-    </section>
+                <th>Certifications</th>
 
-    <!-- Candidate DB -->
+                <th>Skills</th>
 
-    <section class="card">
+                <th>ATS Score</th>
 
-        <div class="section-header">
+            </tr>
 
-            <h2>
-                Candidate Database
-            </h2>
+        </thead>
 
-            <button
-                onclick="exportCSV()"
-            >
-                Export CSV
-            </button>
+        <tbody>
 
-        </div>
+        </tbody>
 
-        <table
-            id="candidateTable"
-        >
+    </table>
 
-            <thead>
-
-                <tr>
-
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Skills</th>
-                    <th>ATS Score</th>
-
-                </tr>
-
-            </thead>
-
-            <tbody></tbody>
-
-        </table>
-
-    </section>
+</section>
+```
 
 </div>
 
 <script src="script.js"></script>
 
 </body>
+
 </html>
