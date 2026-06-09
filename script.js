@@ -9,7 +9,7 @@ message,
 type = ""
 ){
 
-```
+
 const box =
     document.getElementById(
         "statusBox"
@@ -28,7 +28,7 @@ if(type){
         type
     );
 }
-```
+
 
 }
 
@@ -141,7 +141,7 @@ try {
 
 async function uploadBulkResume() {
 
-```
+
 const files =
     document.getElementById(
         "resumeFiles"
@@ -228,7 +228,7 @@ try {
         "status-error"
     );
 }
-```
+
 
 }
 
@@ -238,7 +238,7 @@ try {
 
 async function searchCandidates(){
 
-```
+
 const skill =
     document.getElementById(
         "skillSearch"
@@ -322,7 +322,7 @@ try {
         "status-error"
     );
 }
-```
+
 
 }
 
@@ -332,7 +332,7 @@ try {
 
 async function rankCandidates(){
 
-```
+
 const jd =
     document.getElementById(
         "jobDescription"
@@ -430,7 +430,7 @@ try {
         "status-error"
     );
 }
-```
+
 
 }
 
@@ -440,7 +440,7 @@ try {
 
 function exportCSV(){
 
-```
+
 updateStatus(
     "Preparing CSV export..."
 );
@@ -458,7 +458,7 @@ setTimeout(() => {
     );
 
 }, 1000);
-```
+
 
 }
 
